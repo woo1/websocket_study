@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat</title>
+</head>
+<body>
+  <form action="" onsubmit="sendMsg(event)">
+    <input id="msg" type="text" autocomplete="off">
+    <input id="author" type="text" placeholder="username" autocomplete="off">
+    <button>Send</button>
+  </form>
+  <br>
+  <ul id="messages">
+    {% for comment in comments %}
+      <li>
+        <h3>{{comment.author}}</h3>
+        <p>{{comment.content}}</p>
+      </li>
+    {% endfor %}
+  </ul>
+  <script type="text/javascript">
+    let webSocket = new WebSocket("ws://localhost:8000/ws");
+
+    // 메시지 오면 호출되는 함수
+    webSocket.onmessage = function(event){
+      let comments = document.getElementById("messages");
+      let comment = document.createElement("li")
+      let jsonObj = JSON.parse(event.data);
+      let authorNode = document.createElement('h3');
+      authorNode.innerHTML = jsonObj.author;
+      let contentNode = document.createElement('h3');
+      contentNode.innerHTML = jsonObj.content;
+
+      comment.appendChild(authorNode);
+      comment.appendChild(contentNode);
+      comments.appendChild(comment);
+    };
+    // 전송
+    function sendMsg(event){
+      let msg = document.getElementById("msg");
+      let author = document.getElementById("author");
+      webSocket.send(JSON.stringify({"author": author.value, "content": msg.value}));
+      msg.value = '';
+      author.value = '';
+      event.preventDefault();
+    }
+  </script>
+</body>
+</html>
